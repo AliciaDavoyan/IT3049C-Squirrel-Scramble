@@ -2,7 +2,7 @@ class mainScene {
 
     preload() {
 
-        this.load.image('player', 'resources/images/placeholder/player');
+        this.load.image('player', 'resources/images/placeholder/player.png');
         this.load.image('acorn', 'resources/images/placeholder/acorn.png');
         this.load.image('platform', 'resources/images/placeholder/platform.png');
 
