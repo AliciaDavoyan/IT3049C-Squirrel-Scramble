@@ -9,18 +9,29 @@ class mainScene {
     }
 
     create() {
-        
+        this.player = this.physics.add.sprite(100, 500, 'player');
+
+        this.arrow = this.input.keyboard.createCursorKeys();
+
     }
 
     update() {
 
+        // Handle horizontal movements
+        if (this.arrow.right.isDown) {
+            // If the right arrow is pressed, move to the right
+            this.player.x += 5;
+        } else if (this.arrow.left.isDown) {
+            // If the left arrow is pressed, move to the left
+            this.player.x -= 5;
+        }
     }
-    
+
 }
 
 new Phaser.Game({
     width: 700,
-    height: 400,
+    height: 600,
     backgroundColor: '#3498db',
     scene: mainScene,
     physics: { default: 'arcade' },
