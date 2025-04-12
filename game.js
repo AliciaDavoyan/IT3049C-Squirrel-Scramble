@@ -2,9 +2,12 @@ class mainScene {
 
     preload() {
 
-        this.load.image('player', 'resources/images/placeholder/player.png');
-        this.load.image('acorn', 'resources/images/placeholder/acorn.png');
-        this.load.image('platform', 'resources/images/placeholder/platform.png');
+        this.load.spritesheet("player", "resources/images/squirrel.png", {
+            frameWidth: 126,
+            frameHeight: 108
+        });
+        this.load.image('acorn', 'resources/images/acorn.png');
+        this.load.image('platform', 'resources/images/platform.png');
 
     }
 
@@ -13,20 +16,33 @@ class mainScene {
 
         this.arrow = this.input.keyboard.createCursorKeys();
 
+        this.anims.create({
+            key: "walk",
+            frames: this.anims.generateFrameNumbers("player", {
+                start: 0,
+                end: 2
+            }),
+            frameRate: 15,
+            repeat: -1
+        });
+
     }
 
     update() {
-
-        // Handle horizontal movements
         if (this.arrow.right.isDown) {
-            // If the right arrow is pressed, move to the right
+            this.player.play("walk", true);
             this.player.x += 5;
+            this.player.flipX = false;
         } else if (this.arrow.left.isDown) {
-            // If the left arrow is pressed, move to the left
+            this.player.play("walk", true);
             this.player.x -= 5;
+            this.player.flipX = true;
+        } else {
+            this.player.anims.stop();
+            this.player.setFrame(3);
         }
     }
-
+    
 }
 
 new Phaser.Game({
