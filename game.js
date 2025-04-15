@@ -26,6 +26,12 @@ class mainScene {
             repeat: -1
         });
 
+        this.platform = this.physics.add.staticGroup();
+        this.platform.create(400, 568, 'platform').setScale(2).refreshbody();
+        this.platform.create(600, 400, 'platform');
+        this.platform.create(50, 250, 'platform');
+        this.platform.create(750, 220, 'platform');
+
     }
 
     update() {
@@ -50,6 +56,12 @@ new Phaser.Game({
     height: 600,
     backgroundColor: '#3498db',
     scene: mainScene,
-    physics: { default: 'arcade' },
+    physics: { 
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 300},
+            debug: false
+        }
+     },
     parent: 'game',
 });
