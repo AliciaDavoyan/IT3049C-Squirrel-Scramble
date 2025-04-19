@@ -27,16 +27,12 @@ class mainScene {
         });
 
         this.platforms = this.physics.add.staticGroup();
-
+        
         for (let i = 0; i < 5; i++) {
-          const x = Phaser.Math.Between(80, 400);
-          const y = 150 * i;
-    
-          /** @type {Phaser.Physics.Arcade.Sprite} */
+          const x = Phaser.Math.Between(80, 500);
+          const y = 140 * i;
           const platform = this.platforms.create(x, y, "platform");
           platform.scale = 0.5;
-    
-          /** @type {Phaser.Physics.Arcade.StaticBody} */
           const body = platform.body;
           body.updateFromGameObject();
         }
@@ -45,11 +41,15 @@ class mainScene {
         this.player.body.checkCollision.up = false;
         this.player.body.checkCollision.left = false;
         this.player.body.checkCollision.right = false;
+        this.cameras.main.startFollow(this.player);
     
 
     }
 
     update() {
+        //Means player is touching top of platform
+        const onPlatform = this.player.body.touching.down;
+        
         if (this.arrow.right.isDown) {
             this.player.play("walk", true);
             this.player.x += 5;
@@ -58,12 +58,22 @@ class mainScene {
             this.player.play("walk", true);
             this.player.x -= 5;
             this.player.flipX = true;
-        } else if (this.arrow.up.isDown) {
-            this.player.setVelocityY(-400);
+        } else if (this.arrow.up.isDown && onPlatform) {
+            this.player.setVelocityY(-480);
         } else {
             this.player.anims.stop();
             this.player.setFrame(3);
         }
+
+        this.platforms.children.iterate(child => {
+            const platform = child;
+            const scrollUp = this.cameras.main.scrollY;
+            if (platform.y >= scrollUp + 650) {
+              platform.y = scrollUp - Phaser.Math.Between(50, 100);
+              platform.body.updateFromGameObject();
+            }
+          });
+      
     }
 
 }
