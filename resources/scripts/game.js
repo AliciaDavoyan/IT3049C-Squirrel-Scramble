@@ -26,11 +26,26 @@ class mainScene {
             repeat: -1
         });
 
-        let platform = this.physics.add.staticGroup();
-        platform.create(400, 568, 'platform').setScale(2).refreshbody();
-        platform.create(600, 400, 'platform');
-        platform.create(50, 250, 'platform');
-        platform.create(750, 220, 'platform');
+        this.platforms = this.physics.add.staticGroup();
+
+        for (let i = 0; i < 5; i++) {
+          const x = Phaser.Math.Between(80, 400);
+          const y = 150 * i;
+    
+          /** @type {Phaser.Physics.Arcade.Sprite} */
+          const platform = this.platforms.create(x, y, "platform");
+          platform.scale = 0.5;
+    
+          /** @type {Phaser.Physics.Arcade.StaticBody} */
+          const body = platform.body;
+          body.updateFromGameObject();
+        }
+
+        this.physics.add.collider(this.platforms, this.player);
+        this.player.body.checkCollision.up = false;
+        this.player.body.checkCollision.left = false;
+        this.player.body.checkCollision.right = false;
+    
 
     }
 
@@ -43,6 +58,8 @@ class mainScene {
             this.player.play("walk", true);
             this.player.x -= 5;
             this.player.flipX = true;
+        } else if (this.arrow.up.isDown) {
+            this.player.setVelocityY(-400);
         } else {
             this.player.anims.stop();
             this.player.setFrame(3);
@@ -59,7 +76,7 @@ new Phaser.Game({
     physics: { 
         default: 'arcade',
         arcade: {
-            gravity: { y: 300},
+            gravity: { y: 500},
             debug: false
         }
      },
