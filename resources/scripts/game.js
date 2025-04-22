@@ -8,7 +8,7 @@ class mainScene {
         });
         this.load.image('acorn', 'resources/images/acorn.png');
         this.load.image('platform', 'resources/images/platform.png');
-
+        this.load.image('ground', 'resources/images/placeholder/ground.png');
     }
 
     create() {
@@ -26,15 +26,31 @@ class mainScene {
             repeat: -1
         });
 
-        let platform = this.physics.add.staticGroup();
-        platform.create(400, 568, 'platform').setScale(2).refreshbody();
-        platform.create(600, 400, 'platform');
-        platform.create(50, 250, 'platform');
-        platform.create(750, 220, 'platform');
+        this.platforms = this.physics.add.staticGroup();
+        this.ground = this.physics.add.staticGroup();
 
+        for (let i = 0; i < 5; i++) {
+          const x = Phaser.Math.Between(80, 500);
+          const y = 140 * i; //Determines how high a platform is
+          const platform = this.platforms.create(x, y, "platform");
+          platform.scale = 0.5;
+          const body = platform.body;
+          body.updateFromGameObject();
+        }
+
+        this.ground.create(400, 700, 'ground');
+        this.physics.add.collider(this.platforms, this.player);
+        this.physics.add.collider(this.ground, this.player); //NOTE: Can't have more than two objects using the same collider
+        this.player.body.checkCollision.up = false;
+        this.player.body.checkCollision.left = false;
+        this.player.body.checkCollision.right = false;
+        this.cameras.main.startFollow(this.player);
     }
 
     update() {
+        //Means player is touching top of platform
+        const onPlatform = this.player.body.touching.down;
+        
         if (this.arrow.right.isDown) {
             this.player.play("walk", true);
             this.player.x += 5;
@@ -43,12 +59,22 @@ class mainScene {
             this.player.play("walk", true);
             this.player.x -= 5;
             this.player.flipX = true;
+        } else if (this.arrow.up.isDown && onPlatform) {
+            this.player.setVelocityY(-480);
         } else {
             this.player.anims.stop();
             this.player.setFrame(3);
         }
-    }
 
+        this.platforms.children.iterate(child => {
+            const platform = child;
+            const scrollUp = this.cameras.main.scrollY;
+            if (platform.y >= scrollUp + 650) {
+              platform.y = scrollUp - Phaser.Math.Between(50, 100);
+              platform.body.updateFromGameObject();
+            }
+          });
+    }
 }
 
 new Phaser.Game({
@@ -59,7 +85,7 @@ new Phaser.Game({
     physics: { 
         default: 'arcade',
         arcade: {
-            gravity: { y: 300},
+            gravity: { y: 500},
             debug: false
         }
      },
