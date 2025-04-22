@@ -8,7 +8,7 @@ class mainScene {
         });
         this.load.image('acorn', 'resources/images/acorn.png');
         this.load.image('platform', 'resources/images/platform.png');
-
+        this.load.image('ground', 'resources/images/placeholder/ground.png');
     }
 
     create() {
@@ -27,23 +27,24 @@ class mainScene {
         });
 
         this.platforms = this.physics.add.staticGroup();
-        
+        this.ground = this.physics.add.staticGroup();
+
         for (let i = 0; i < 5; i++) {
           const x = Phaser.Math.Between(80, 500);
-          const y = 140 * i;
+          const y = 140 * i; //Determines how high a platform is
           const platform = this.platforms.create(x, y, "platform");
           platform.scale = 0.5;
           const body = platform.body;
           body.updateFromGameObject();
         }
 
+        this.ground.create(400, 700, 'ground');
         this.physics.add.collider(this.platforms, this.player);
+        this.physics.add.collider(this.ground, this.player); //NOTE: Can't have more than two objects using the same collider
         this.player.body.checkCollision.up = false;
         this.player.body.checkCollision.left = false;
         this.player.body.checkCollision.right = false;
         this.cameras.main.startFollow(this.player);
-    
-
     }
 
     update() {
@@ -73,9 +74,7 @@ class mainScene {
               platform.body.updateFromGameObject();
             }
           });
-      
     }
-
 }
 
 new Phaser.Game({
