@@ -29,8 +29,8 @@ class mainScene {
         this.platforms = this.physics.add.staticGroup();
         this.ground = this.physics.add.staticGroup();
 
-        for (let i = 0; i < 5; i++) {
-          const x = Phaser.Math.Between(80, 500);
+        for (let i = 0; i < 12; i++) {
+          const x = Phaser.Math.Between(-30, 750);
           const y = 140 * i; //Determines how high a platform is
           const platform = this.platforms.create(x, y, "platform");
           platform.scale = 0.5;
@@ -60,7 +60,7 @@ class mainScene {
             this.player.x -= 5;
             this.player.flipX = true;
         } else if (this.arrow.up.isDown && onPlatform) {
-            this.player.setVelocityY(-480);
+            this.player.setVelocityY(-1500);
         } else {
             this.player.anims.stop();
             this.player.setFrame(3);
@@ -85,7 +85,7 @@ new Phaser.Game({
     physics: { 
         default: 'arcade',
         arcade: {
-            gravity: { y: 500},
+            gravity: { y: 4000},
             debug: false
         }
      },
