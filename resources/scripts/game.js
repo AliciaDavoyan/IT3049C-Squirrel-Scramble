@@ -45,6 +45,20 @@ class mainScene {
         this.player.body.checkCollision.left = false;
         this.player.body.checkCollision.right = false;
         this.cameras.main.startFollow(this.player);
+
+        // vvv SCORE SYSTEM vvv
+
+        this.initialY = this.player.y; // Starting Y position (ref)
+        this.score = 0;
+        this.highScore = localStorage.getItem('highScore') || 0;
+
+        // Score text display (top-left corner)
+        this.scoreText = this.add.text(20, 20, `Score: 0\nHigh Score: ${this.highScore}`, {
+        font: '24px Arial',
+        fill: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 4
+        }).setScrollFactor(0); // Text stays still
     }
 
     update() {
@@ -75,6 +89,20 @@ class mainScene {
                 platform.body.updateFromGameObject();
             }
           });
+
+        // Calculate score based on how far up the player has gone (lower Y = higher)
+        const currentScore = Math.max(this.score, Math.floor(this.initialY - this.player.y));
+        if (currentScore > this.score) {
+        this.score = currentScore;
+        this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
+        }
+
+        // Update high score if surpassed
+        if (this.score > this.highScore) {
+        this.highScore = this.score;
+        localStorage.setItem('highScore', this.highScore);
+        this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
+        }
     }
 }
 
