@@ -70,8 +70,9 @@ class mainScene {
             const platform = child;
             const scrollUp = this.cameras.main.scrollY;
             if (platform.y >= scrollUp + 650) {
-              platform.y = scrollUp - Phaser.Math.Between(50, 100);
-              platform.body.updateFromGameObject();
+                platform.x = Phaser.Math.Between(-30, 750); // Randomize X
+                platform.y = scrollUp - Phaser.Math.Between(50, 100);
+                platform.body.updateFromGameObject();
             }
           });
     }
