@@ -8,7 +8,7 @@ class mainScene {
         });
         this.load.image('acorn', 'resources/images/acorn.png');
         this.load.image('platform', 'resources/images/platform.png');
-        this.load.image('ground', 'resources/images/placeholder/ground.png');
+        this.load.image('ground', 'resources/images/grass.png');
     }
 
     create() {
@@ -29,8 +29,8 @@ class mainScene {
         this.platforms = this.physics.add.staticGroup();
         this.ground = this.physics.add.staticGroup();
 
-        for (let i = 0; i < 12; i++) {
-          const x = Phaser.Math.Between(-30, 750);
+        for (let i = 0; i < 5; i++) {
+          const x = Phaser.Math.Between(0, 750); //Determines how far apart the platforms will spawn
           const y = 140 * i; //Determines how high a platform is
           const platform = this.platforms.create(x, y, "platform");
           platform.scale = 0.5;
@@ -38,7 +38,7 @@ class mainScene {
           body.updateFromGameObject();
         }
 
-        this.ground.create(400, 700, 'ground');
+        this.ground.create(400, 700, 'ground').setScale(1.5).refreshBody();
         this.physics.add.collider(this.platforms, this.player);
         this.physics.add.collider(this.ground, this.player); //NOTE: Can't have more than two objects using the same collider
         this.player.body.checkCollision.up = false;
@@ -84,7 +84,7 @@ class mainScene {
             const platform = child;
             const scrollUp = this.cameras.main.scrollY;
             if (platform.y >= scrollUp + 650) {
-                platform.x = Phaser.Math.Between(-30, 750); // Randomize X
+                platform.x = Phaser.Math.Between(0, 750); // Randomize X
                 platform.y = scrollUp - Phaser.Math.Between(50, 100);
                 platform.body.updateFromGameObject();
             }
