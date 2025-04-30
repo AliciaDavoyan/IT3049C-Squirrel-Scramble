@@ -52,7 +52,6 @@ class mainScene extends Phaser.Scene {
         // vvv SCORE SYSTEM vvv
 
         this.initialY = this.player.y; // Starting Y position (ref)
-        this.playerYTotal = 0; // Total Y distance traveled
         this.score = 0;
         this.highScore = localStorage.getItem('highScore') || 0;
 
@@ -104,10 +103,11 @@ class mainScene extends Phaser.Scene {
                 ground.body.updateFromGameObject();
             });
 
-            this.playerYTotal += offset / 10;
+            this.score += Math.floor(offset / 10);
 
         }
 
+        // Move platforms to the top of the screen when they go off-screen
         this.platforms.children.iterate(child => {
             const platform = child;
             const scrollUp = this.cameras.main.scrollY;
@@ -123,11 +123,8 @@ class mainScene extends Phaser.Scene {
         }
 
         // Calculate score based on how far up the player has gone (lower Y = higher)
-        const currentScore = Math.max(this.score, Math.floor(this.initialY - this.playerYTotal));
-        if (currentScore > this.score) {
-        this.score = currentScore;
+
         this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
-        }
 
         // Update high score if surpassed
         if (this.score > this.highScore) {
