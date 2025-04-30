@@ -1,5 +1,8 @@
-class mainScene {
-
+class mainScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'mainScene' });
+    }
+    
     preload() {
 
         this.load.spritesheet("player", "resources/images/squirrel.png", {
@@ -30,7 +33,7 @@ class mainScene {
         this.ground = this.physics.add.staticGroup();
 
         for (let i = 0; i < 12; i++) {
-          const x = Phaser.Math.Between(-30, 750);
+          const x = Phaser.Math.Between(0, 600);
           const y = 140 * i; //Determines how high a platform is
           const platform = this.platforms.create(x, y, "platform");
           platform.scale = 0.5;
@@ -38,17 +41,18 @@ class mainScene {
           body.updateFromGameObject();
         }
 
-        this.ground.create(400, 700, 'ground').setScale(1.8).refreshBody();
+        this.ground.create(200, 600, 'ground');
+        this.ground.create(500, 600, 'ground');
         this.physics.add.collider(this.platforms, this.player);
         this.physics.add.collider(this.ground, this.player); //NOTE: Can't have more than two objects using the same collider
         this.player.body.checkCollision.up = false;
         this.player.body.checkCollision.left = false;
         this.player.body.checkCollision.right = false;
-        this.cameras.main.startFollow(this.player);
 
         // vvv SCORE SYSTEM vvv
 
         this.initialY = this.player.y; // Starting Y position (ref)
+        this.playerYTotal = 0; // Total Y distance traveled
         this.score = 0;
         this.highScore = localStorage.getItem('highScore') || 0;
 
@@ -58,7 +62,7 @@ class mainScene {
         fill: '#ffffff',
         stroke: '#000000',
         strokeThickness: 4
-        }).setScrollFactor(0); // Text stays still
+        })
     }
 
     update() {
@@ -80,18 +84,46 @@ class mainScene {
             this.player.setFrame(3);
         }
 
+
+        // Check if player has jumped. If so, then move platforms and ground down 
+        const playerY = this.player.y;
+
+        if (playerY < 300) {
+            const offset = 300 - playerY;
+            this.player.y += offset;
+
+            this.platforms.children.iterate(child => {
+                const platform = child;
+                platform.y += offset;
+                platform.body.updateFromGameObject();
+            });
+
+            this.ground.children.iterate(child => {
+                const ground = child;
+                ground.y += offset;
+                ground.body.updateFromGameObject();
+            });
+
+            this.playerYTotal += offset / 10;
+
+        }
+
         this.platforms.children.iterate(child => {
             const platform = child;
             const scrollUp = this.cameras.main.scrollY;
             if (platform.y >= scrollUp + 650) {
-                platform.x = Phaser.Math.Between(-30, 750); // Randomize X
                 platform.y = scrollUp - Phaser.Math.Between(50, 100);
                 platform.body.updateFromGameObject();
             }
-          });
+        });
+
+        // If player falls below the screen, call Game Over scene
+        if (this.player.y > 600) {
+            this.scene.start('GameOverScene');
+        }
 
         // Calculate score based on how far up the player has gone (lower Y = higher)
-        const currentScore = Math.max(this.score, Math.floor(this.initialY - this.player.y));
+        const currentScore = Math.max(this.score, Math.floor(this.initialY - this.playerYTotal));
         if (currentScore > this.score) {
         this.score = currentScore;
         this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
@@ -106,11 +138,37 @@ class mainScene {
     }
 }
 
+class GameOverScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'GameOverScene' });
+    }
+
+    create() {
+        this.add.text(350, 200, 'Game Over!', {
+            fontSize: '40px',
+            fill: '#fff',
+            align: 'center'
+        }).setOrigin(0.5);
+
+        const restartButton = this.add.text(350, 300, 'Restart', {
+            fontSize: '30px',
+            fill: '#fff',
+            backgroundColor: '#000',
+            padding: { x: 10, y: 5 }
+        }).setOrigin(0.5).setInteractive();
+
+        restartButton.on('pointerdown', () => {
+            this.scene.start('mainScene');
+        });
+    }
+}
+
+
 new Phaser.Game({
     width: 700,
     height: 600,
     backgroundColor: '#3498db',
-    scene: mainScene,
+    scene: [mainScene, GameOverScene],
     physics: { 
         default: 'arcade',
         arcade: {
