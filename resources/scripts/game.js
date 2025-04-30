@@ -2,7 +2,7 @@ class mainScene extends Phaser.Scene {
     constructor() {
         super({ key: 'mainScene' });
     }
-    
+
     preload() {
 
         this.load.spritesheet("player", "resources/images/squirrel.png", {
@@ -33,12 +33,12 @@ class mainScene extends Phaser.Scene {
         this.ground = this.physics.add.staticGroup();
 
         for (let i = 0; i < 12; i++) {
-          const x = Phaser.Math.Between(0, 600);
-          const y = 140 * i; //Determines how high a platform is
-          const platform = this.platforms.create(x, y, "platform");
-          platform.scale = 0.5;
-          const body = platform.body;
-          body.updateFromGameObject();
+            const x = Phaser.Math.Between(0, 600);
+            const y = 140 * i; //Determines how high a platform is
+            const platform = this.platforms.create(x, y, "platform");
+            platform.scale = 0.5;
+            const body = platform.body;
+            body.updateFromGameObject();
         }
 
         this.ground.create(200, 600, 'ground');
@@ -57,17 +57,32 @@ class mainScene extends Phaser.Scene {
 
         // Score text display (top-left corner)
         this.scoreText = this.add.text(20, 20, `Score: 0\nHigh Score: ${this.highScore}`, {
-        font: '24px Arial',
-        fill: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 4
+            font: '24px Arial',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
         })
+
+        // vvv BACKGROUND COLOR vvv
+        navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+        
+            if (Math.abs(lat) < 10) {
+              colorHex = 0xCCFFCC;
+            }
+          
+            this.cameras.main.setBackgroundColor(colorHex);
+          }, (error) => {
+            console.error('Geolocation error', error);
+            this.cameras.main.setBackgroundColor(0xCCCCCC);
+          });
+
     }
 
     update() {
         //Means player is touching top of platform
         const onPlatform = this.player.body.touching.down;
-        
+
         if (this.arrow.right.isDown) {
             this.player.play("walk", true);
             this.player.x += 5;
@@ -103,7 +118,7 @@ class mainScene extends Phaser.Scene {
                 ground.body.updateFromGameObject();
             });
 
-            this.score += Math.floor(offset / 10);
+            this.score += Math.floor(offset);
 
         }
 
@@ -112,7 +127,7 @@ class mainScene extends Phaser.Scene {
             const platform = child;
             const scrollUp = this.cameras.main.scrollY;
             if (platform.y >= scrollUp + 650) {
-                platform.y = scrollUp - Phaser.Math.Between(50, 100);
+                platform.y = scrollUp - Phaser.Math.Between(50, 300);
                 platform.body.updateFromGameObject();
             }
         });
@@ -128,9 +143,9 @@ class mainScene extends Phaser.Scene {
 
         // Update high score if surpassed
         if (this.score > this.highScore) {
-        this.highScore = this.score;
-        localStorage.setItem('highScore', this.highScore);
-        this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
+            this.highScore = this.score;
+            localStorage.setItem('highScore', this.highScore);
+            this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
         }
     }
 }
@@ -166,12 +181,12 @@ new Phaser.Game({
     height: 600,
     backgroundColor: '#3498db',
     scene: [mainScene, GameOverScene],
-    physics: { 
+    physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 4000},
+            gravity: { y: 4000 },
             debug: false
         }
-     },
+    },
     parent: 'game',
 });
