@@ -8,7 +8,7 @@ class mainScene {
         });
         this.load.image('acorn', 'resources/images/acorn.png');
         this.load.image('platform', 'resources/images/platform.png');
-        this.load.image('ground', 'resources/images/placeholder/ground.png');
+        this.load.image('ground', 'resources/images/grass.png');
     }
 
     create() {
@@ -38,7 +38,7 @@ class mainScene {
           body.updateFromGameObject();
         }
 
-        this.ground.create(400, 700, 'ground');
+        this.ground.create(400, 700, 'ground').setScale(1.8).refreshBody();
         this.physics.add.collider(this.platforms, this.player);
         this.physics.add.collider(this.ground, this.player); //NOTE: Can't have more than two objects using the same collider
         this.player.body.checkCollision.up = false;
