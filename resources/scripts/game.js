@@ -1,7 +1,6 @@
 class mainScene {
 
     preload() {
-
         this.load.spritesheet("player", "resources/images/squirrel.png", {
             frameWidth: 126,
             frameHeight: 108
@@ -30,41 +29,53 @@ class mainScene {
         this.ground = this.physics.add.staticGroup();
 
         for (let i = 0; i < 12; i++) {
-          const x = Phaser.Math.Between(-30, 750);
-          const y = 140 * i; //Determines how high a platform is
-          const platform = this.platforms.create(x, y, "platform");
-          platform.scale = 0.5;
-          const body = platform.body;
-          body.updateFromGameObject();
+            const x = Phaser.Math.Between(-30, 750);
+            const y = 140 * i; // Determines how high a platform is
+            const platform = this.platforms.create(x, y, "platform");
+            platform.scale = 0.5;
+            const body = platform.body;
+            body.updateFromGameObject();
         }
 
         this.ground.create(400, 700, 'ground').setScale(1.8).refreshBody();
         this.physics.add.collider(this.platforms, this.player);
-        this.physics.add.collider(this.ground, this.player); //NOTE: Can't have more than two objects using the same collider
+        this.physics.add.collider(this.ground, this.player);
         this.player.body.checkCollision.up = false;
         this.player.body.checkCollision.left = false;
         this.player.body.checkCollision.right = false;
         this.cameras.main.startFollow(this.player);
 
-        // vvv SCORE SYSTEM vvv
-
         this.initialY = this.player.y; // Starting Y position (ref)
         this.score = 0;
         this.highScore = localStorage.getItem('highScore') || 0;
 
-        // Score text display (top-left corner)
         this.scoreText = this.add.text(20, 20, `Score: 0\nHigh Score: ${this.highScore}`, {
-        font: '24px Arial',
-        fill: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 4
+            font: '24px Arial',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
         }).setScrollFactor(0); // Text stays still
+
+        // Game over text display (center of screen)
+        this.gameOverText = this.add.text(350, 300, '', {
+            font: '48px Arial',
+            fill: '#ff0000',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5).setScrollFactor(0); // Text stays still
+
+        // Countdown text display (center of screen)
+        this.countdownText = this.add.text(350, 400, '', {
+            font: '36px Arial',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        }).setOrigin(0.5).setScrollFactor(0); // Text stays still
     }
 
     update() {
-        //Means player is touching top of platform
         const onPlatform = this.player.body.touching.down;
-        
+
         if (this.arrow.right.isDown) {
             this.player.play("walk", true);
             this.player.x += 5;
@@ -88,20 +99,30 @@ class mainScene {
                 platform.y = scrollUp - Phaser.Math.Between(50, 100);
                 platform.body.updateFromGameObject();
             }
-          });
+        });
 
-        // Calculate score based on how far up the player has gone (lower Y = higher)
         const currentScore = Math.max(this.score, Math.floor(this.initialY - this.player.y));
         if (currentScore > this.score) {
-        this.score = currentScore;
-        this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
+            this.score = currentScore;
+            this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
         }
 
-        // Update high score if surpassed
         if (this.score > this.highScore) {
-        this.highScore = this.score;
-        localStorage.setItem('highScore', this.highScore);
-        this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
+            this.highScore = this.score;
+            localStorage.setItem('highScore', this.highScore);
+            this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
+        }
+
+        // Check if player has fallen below the ground level
+        if (this.player.y > 700) {
+            this.gameOverText.setText('Game Over');
+            this.countdownText.setText('Game will restart in 5 seconds ...');
+            this.player.setActive(false).setVisible(false); // Hide player
+
+            // Restart the game after 5 seconds
+            this.time.delayedCall(5000, () => {
+                this.scene.restart();
+            });
         }
     }
 }
@@ -111,12 +132,12 @@ new Phaser.Game({
     height: 600,
     backgroundColor: '#3498db',
     scene: mainScene,
-    physics: { 
+    physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 4000},
+            gravity: { y: 4000 },
             debug: false
         }
-     },
+    },
     parent: 'game',
 });
