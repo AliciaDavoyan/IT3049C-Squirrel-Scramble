@@ -64,18 +64,15 @@ class mainScene extends Phaser.Scene {
         })
 
         // vvv BACKGROUND COLOR vvv
-        navigator.geolocation.getCurrentPosition((position) => {
+       navigator.geolocation.getCurrentPosition((position) => {
             const lat = position.coords.latitude;
         
-            if (Math.abs(lat) < 10) {
+            if (Math.abs(lat) < 1000) {
               colorHex = 0xCCFFCC;
             }
           
             this.cameras.main.setBackgroundColor(colorHex);
-          }, (error) => {
-            console.error('Geolocation error', error);
-            this.cameras.main.setBackgroundColor(0xCCCCCC);
-          });
+          })
 
     }
 
