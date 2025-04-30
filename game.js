@@ -8,6 +8,8 @@ class mainScene {
         });
         this.load.image('acorn', 'resources/images/acorn.png');
         this.load.image('platform', 'resources/images/platform.png');
+        this.load.image('ground', 'resources/images/placeholder/ground.png');
+
 
     }
 
@@ -43,6 +45,9 @@ class mainScene {
         }
     }
     
+    
+
+
 }
 
 new Phaser.Game({
