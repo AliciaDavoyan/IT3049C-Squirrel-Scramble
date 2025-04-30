@@ -2,9 +2,8 @@ class mainScene extends Phaser.Scene {
     constructor() {
         super({ key: 'mainScene' });
     }
-    
-    preload() {
 
+    preload() {
         this.load.spritesheet("player", "resources/images/squirrel.png", {
             frameWidth: 126,
             frameHeight: 108
@@ -12,9 +11,37 @@ class mainScene extends Phaser.Scene {
         this.load.image('acorn', 'resources/images/acorn.png');
         this.load.image('platform', 'resources/images/platform.png');
         this.load.image('ground', 'resources/images/grass.png');
+        this.load.image('dayBackground', 'resources/images/dayBackground.png');
+        this.load.image('nightBackground', 'resources/images/nightBackground.png');
     }
 
     create() {
+        // Fetch current time from worldtimeapi.org
+        fetch('http://worldtimeapi.org/api/timezone/Etc/UTC')
+            .then(response => response.json())
+            .then(data => {
+                // Extract hours from the datetime field (e.g., "2025-04-30T22:16:00.123456+00:00")
+                const dateTime = new Date(data.datetime);
+                const hours = dateTime.getUTCHours(); // Use UTC hours
+
+                // Set background based on time (6 AM to 6 PM = day, else night)
+                if (hours >= 6 && hours < 18) {
+                    this.add.image(350, 300, 'dayBackground').setScale(2).setDepth(-1);
+                } else {
+                    this.add.image(350, 300, 'nightBackground').setScale(2).setDepth(-1);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching time:', error);
+                // Fallback to local time if API fails
+                const localHours = new Date().getHours();
+                if (localHours >= 6 && localHours < 18) {
+                    this.add.image(350, 300, 'dayBackground').setScale(2).setDepth(-1);
+                } else {
+                    this.add.image(350, 300, 'nightBackground').setScale(2).setDepth(-1);
+                }
+            });
+
         this.player = this.physics.add.sprite(100, 500, 'player');
 
         this.arrow = this.input.keyboard.createCursorKeys();
@@ -33,41 +60,37 @@ class mainScene extends Phaser.Scene {
         this.ground = this.physics.add.staticGroup();
 
         for (let i = 0; i < 12; i++) {
-          const x = Phaser.Math.Between(0, 600);
-          const y = 140 * i; //Determines how high a platform is
-          const platform = this.platforms.create(x, y, "platform");
-          platform.scale = 0.5;
-          const body = platform.body;
-          body.updateFromGameObject();
+            const x = Phaser.Math.Between(0, 600);
+            const y = 140 * i; // Determines how high a platform is
+            const platform = this.platforms.create(x, y, "platform");
+            platform.scale = 0.5;
+            const body = platform.body;
+            body.updateFromGameObject();
         }
 
         this.ground.create(200, 600, 'ground');
         this.ground.create(500, 600, 'ground');
         this.physics.add.collider(this.platforms, this.player);
-        this.physics.add.collider(this.ground, this.player); //NOTE: Can't have more than two objects using the same collider
+        this.physics.add.collider(this.ground, this.player);
         this.player.body.checkCollision.up = false;
         this.player.body.checkCollision.left = false;
         this.player.body.checkCollision.right = false;
-
-        // vvv SCORE SYSTEM vvv
 
         this.initialY = this.player.y; // Starting Y position (ref)
         this.score = 0;
         this.highScore = localStorage.getItem('highScore') || 0;
 
-        // Score text display (top-left corner)
         this.scoreText = this.add.text(20, 20, `Score: 0\nHigh Score: ${this.highScore}`, {
-        font: '24px Arial',
-        fill: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 4
-        })
+            font: '24px Arial',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        });
     }
 
     update() {
-        //Means player is touching top of platform
         const onPlatform = this.player.body.touching.down;
-        
+
         if (this.arrow.right.isDown) {
             this.player.play("walk", true);
             this.player.x += 5;
@@ -83,8 +106,6 @@ class mainScene extends Phaser.Scene {
             this.player.setFrame(3);
         }
 
-
-        // Check if player has jumped. If so, then move platforms and ground down 
         const playerY = this.player.y;
 
         if (playerY < 300) {
@@ -104,10 +125,8 @@ class mainScene extends Phaser.Scene {
             });
 
             this.score += Math.floor(offset / 10);
-
         }
 
-        // Move platforms to the top of the screen when they go off-screen
         this.platforms.children.iterate(child => {
             const platform = child;
             const scrollUp = this.cameras.main.scrollY;
@@ -117,20 +136,16 @@ class mainScene extends Phaser.Scene {
             }
         });
 
-        // If player falls below the screen, call Game Over scene
         if (this.player.y > 600) {
             this.scene.start('GameOverScene');
         }
 
-        // Calculate score based on how far up the player has gone (lower Y = higher)
-
         this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
 
-        // Update high score if surpassed
         if (this.score > this.highScore) {
-        this.highScore = this.score;
-        localStorage.setItem('highScore', this.highScore);
-        this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
+            this.highScore = this.score;
+            localStorage.setItem('highScore', this.highScore);
+            this.scoreText.setText(`Score: ${this.score}\nHigh Score: ${this.highScore}`);
         }
     }
 }
@@ -160,18 +175,17 @@ class GameOverScene extends Phaser.Scene {
     }
 }
 
-
 new Phaser.Game({
     width: 700,
     height: 600,
     backgroundColor: '#3498db',
     scene: [mainScene, GameOverScene],
-    physics: { 
+    physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 4000},
+            gravity: { y: 4000 },
             debug: false
         }
-     },
+    },
     parent: 'game',
 });
